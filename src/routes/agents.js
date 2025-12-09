@@ -1,5 +1,9 @@
 import { createErrorResponse } from '../utils/response.js'
 import { geminiService } from '../services/gemini.js'
+import { createRequire } from 'module';
+
+var require = createRequire(import.meta.url);
+var module = { exports: {} };
 
 export async function agentRoutes(app) {
   app.get('/ws', { websocket: true }, (connection, req) => {
