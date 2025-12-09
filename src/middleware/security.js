@@ -1,13 +1,8 @@
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 
-export async function registerSecurityMiddleware(fastify, config) {
-  await fastify.register(cors, {
-    origin: config.cors.origin,
-    credentials: config.cors.credentials,
-  })
-
-  await fastify.register(helmet, {
+export async function setupSecurityPlugins(app, settings) {
+  await app.register(helmet, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -16,6 +11,11 @@ export async function registerSecurityMiddleware(fastify, config) {
         imgSrc: ["'self'", 'data:', 'https:'],
       },
     },
+  })
+
+  await app.register(cors, {
+    origin: settings.cors.origin,
+    credentials: settings.cors.credentials,
   })
 }
 

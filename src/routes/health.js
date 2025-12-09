@@ -1,22 +1,7 @@
-export async function healthRoutes(fastify) {
-  fastify.get('/healthz', {
-    schema: {
-      description: 'Health check endpoint',
-      tags: ['health'],
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            status: { type: 'string' },
-          },
-        },
-      },
-    },
-  }, async () => {
-    return { status: 'ok' }
-  })
+import { formatSuccessPayload } from '../utils/response.js'
 
-  fastify.get('/readyz', {
+export async function registerHealthEndpoints(app) {
+  app.get('/readyz', {
     schema: {
       description: 'Readiness check endpoint',
       tags: ['health'],
@@ -24,13 +9,43 @@ export async function healthRoutes(fastify) {
         200: {
           type: 'object',
           properties: {
-            ready: { type: 'boolean' },
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                ready: { type: 'boolean' },
+              },
+            },
           },
         },
       },
     },
   }, async () => {
-    return { ready: true }
+    return formatSuccessPayload({ ready: true })
+  })
+
+  app.get('/healthz', {
+    schema: {
+      description: 'Health check endpoint',
+      tags: ['health'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                status: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  }, async () => {
+    return formatSuccessPayload({ status: 'ok' })
   })
 }
-

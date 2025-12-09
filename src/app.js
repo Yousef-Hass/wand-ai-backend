@@ -1,17 +1,22 @@
 import Fastify from 'fastify'
-import { getConfig } from './config/index.js'
-import { createErrorHandler } from './utils/errors.js'
-import { registerSecurityMiddleware } from './middleware/security.js'
-import { healthRoutes } from './routes/health.js'
-import { apiRoutes } from './routes/api.js'
+import websocket from '@fastify/websocket'
+import { EventEmitter } from 'events'
+import { loadAppSettings } from './config/index.js'
+import { buildErrorHandler } from './utils/errors.js'
+import { setupSecurityPlugins } from './middleware/security.js'
+import { registerHealthEndpoints } from './routes/health.js'
+import { registerApiEndpoints } from './routes/api.js'
+import { agentRoutes } from './routes/agents.js'
+import { geminiRoutes } from './routes/gemini.js'
+import { AgentOrchestrator } from './agents/index.js'
 
-export async function createApp() {
-  const config = getConfig()
+export async function buildApplication() {
+  const settings = loadAppSettings()
 
-  const app = Fastify({
+  const appInstance = Fastify({
     logger: {
-      level: config.logging.level,
-      transport: config.environment === 'development'
+      level: settings.logging.level,
+      transport: settings.environment === 'development'
         ? {
             target: 'pino-pretty',
             options: {
@@ -25,13 +30,21 @@ export async function createApp() {
     },
   })
 
-  await registerSecurityMiddleware(app, config)
+  await appInstance.register(websocket)
+  await setupSecurityPlugins(appInstance, settings)
 
-  await app.register(healthRoutes)
-  await app.register(apiRoutes)
+  appInstance.eventDispatcher = new EventEmitter()
 
-  app.setErrorHandler(createErrorHandler(config.environment))
+  const workflowManager = new AgentOrchestrator()
+  appInstance.decorate('agentOrchestrator', workflowManager)
 
-  return app
+  appInstance.setErrorHandler(buildErrorHandler(settings.environment))
+
+  await appInstance.register(registerHealthEndpoints)
+  await appInstance.register(registerApiEndpoints)
+  await appInstance.register(agentRoutes)
+  await appInstance.register(geminiRoutes)
+
+  return appInstance
 }
 

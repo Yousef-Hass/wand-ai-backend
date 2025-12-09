@@ -1,23 +1,23 @@
-import { createApp } from './app.js'
-import { getConfig } from './config/index.js'
+import { buildApplication } from './app.js'
+import { loadAppSettings } from './config/index.js'
 
-async function start() {
+async function initializeServer() {
   try {
-    const config = getConfig()
-    const app = await createApp()
+    const appConfig = loadAppSettings()
+    const serverApp = await buildApplication()
 
-    await app.listen({
-      port: config.server.port,
-      host: config.server.host,
+    await serverApp.listen({
+      port: appConfig.server.port,
+      host: appConfig.server.host,
     })
 
-    app.log.info(
-      `Server listening on http://${config.server.host}:${config.server.port}`
+    serverApp.log.info(
+      `Server listening on http://${appConfig.server.host}:${appConfig.server.port}`
     )
-  } catch (error) {
-    console.error('Failed to start server:', error)
+  } catch (err) {
+    console.error('Failed to start server:', err)
     process.exit(1)
   }
 }
 
-start()
+initializeServer()

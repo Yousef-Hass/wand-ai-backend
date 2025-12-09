@@ -1,51 +1,56 @@
-export function createProblemDetails({
+export function buildProblemResponse({
   status,
   title,
   detail,
   instance,
   type = 'about:blank',
 }) {
-  const problem = {
+  const problemObj = {
     type,
     title,
     status,
   }
 
   if (detail) {
-    problem.detail = detail
+    problemObj.detail = detail
   }
 
   if (instance) {
-    problem.instance = instance
+    problemObj.instance = instance
   }
 
-  return problem
+  return problemObj
 }
 
-export function createErrorHandler(environment) {
-  return (error, request, reply) => {
-    const status = error.statusCode || 500
-    const title = status >= 500 
+export function buildErrorHandler(envMode) {
+  return (err, req, res) => {
+    const httpStatus = err.statusCode || 500
+    const errorTitle = httpStatus >= 500 
       ? 'Internal Server Error' 
       : 'Bad Request'
     
-    const detail = environment === 'production' && status >= 500
+    const errorDetail = envMode === 'production' && httpStatus >= 500
       ? undefined
-      : error.message
+      : err.message
 
-    request.log.error({ err: error }, 'Request error occurred')
+    req.log.error({ err }, 'Request error occurred')
 
-    const problem = createProblemDetails({
-      status,
-      title,
-      detail,
-      instance: request.url,
+    const problemData = buildProblemResponse({
+      status: httpStatus,
+      title: errorTitle,
+      detail: errorDetail,
+      instance: req.url,
     })
 
-    reply
-      .code(status)
+    res
+      .code(httpStatus)
       .type('application/problem+json')
-      .send(problem)
+      .send(problemData)
   }
+}
+
+export function processError(err, req, reply) {
+  const handler = buildErrorHandler(process.env.NODE_ENV || 'development')
+  return handler(err, req, reply)
 }
 

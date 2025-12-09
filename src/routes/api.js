@@ -1,5 +1,7 @@
-export async function apiRoutes(fastify) {
-  fastify.get('/api/v1/ping', {
+import { formatSuccessPayload } from '../utils/response.js'
+
+export async function registerApiEndpoints(app) {
+  app.get('/api/v1/ping', {
     schema: {
       description: 'Basic API test endpoint',
       tags: ['api'],
@@ -7,13 +9,20 @@ export async function apiRoutes(fastify) {
         200: {
           type: 'object',
           properties: {
-            pong: { type: 'boolean' },
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                pong: { type: 'boolean' },
+              },
+            },
           },
         },
       },
     },
   }, async () => {
-    return { pong: true }
+    return formatSuccessPayload({ pong: true })
   })
 }
 
