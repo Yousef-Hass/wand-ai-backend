@@ -50,7 +50,7 @@ export async function geminiRoutes(app) {
         responseText = `Mock AI Response: ${prompt}\n\nThis is a simulated response. To get real AI responses, please add your Gemini API key to the .env file.`
       }
 
-      const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
       return res.send(createSuccessResponse(
         {
