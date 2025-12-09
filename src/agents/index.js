@@ -1,4 +1,4 @@
-import { formatSuccessPayload } from '../utils/response.js'
+import { createSuccessResponse } from '../utils/response.js'
 import { EventEmitter } from 'events'
 import { geminiService } from '../services/gemini.js'
 
@@ -88,13 +88,15 @@ export class AgentOrchestrator {
       timestamp: new Date().toISOString()
     })
 
-    return formatSuccessPayload({
+    return createSuccessResponse({
       requestId,
       request,
       agents: agentsToUse,
       results,
       totalTime: Math.max(...results.map(r => r.processingTime)),
-      status: 'completed'
+      status: 'completed',
+    }, {
+      timestamp: new Date().toISOString(),
     })
   }
 }

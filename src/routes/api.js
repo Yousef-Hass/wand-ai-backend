@@ -1,4 +1,5 @@
-import { formatSuccessPayload } from '../utils/response.js'
+import { createSuccessResponse } from '../utils/response.js'
+import { successResponseSchema } from '../utils/schemas.js'
 
 export async function registerApiEndpoints(app) {
   app.get('/api/v1/ping', {
@@ -6,23 +7,15 @@ export async function registerApiEndpoints(app) {
       description: 'Basic API test endpoint',
       tags: ['api'],
       response: {
-        200: {
+        200: successResponseSchema({
           type: 'object',
           properties: {
-            success: { type: 'boolean' },
-            message: { type: 'string' },
-            data: {
-              type: 'object',
-              properties: {
-                pong: { type: 'boolean' },
-              },
-            },
+            pong: { type: 'boolean' },
           },
-        },
+        }),
       },
     },
   }, async () => {
-    return formatSuccessPayload({ pong: true })
+    return createSuccessResponse({ pong: true })
   })
 }
-

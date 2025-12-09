@@ -4,10 +4,7 @@ import { EventEmitter } from 'events'
 import { loadAppSettings } from './config/index.js'
 import { buildErrorHandler } from './utils/errors.js'
 import { setupSecurityPlugins } from './middleware/security.js'
-import { registerHealthEndpoints } from './routes/health.js'
-import { registerApiEndpoints } from './routes/api.js'
-import { agentRoutes } from './routes/agents.js'
-import { geminiRoutes } from './routes/gemini.js'
+import { registerAllRoutes } from './routes/index.js'
 import { AgentOrchestrator } from './agents/index.js'
 
 export async function buildApplication() {
@@ -40,11 +37,7 @@ export async function buildApplication() {
 
   appInstance.setErrorHandler(buildErrorHandler(settings.environment))
 
-  await appInstance.register(registerHealthEndpoints)
-  await appInstance.register(registerApiEndpoints)
-  await appInstance.register(agentRoutes)
-  await appInstance.register(geminiRoutes)
+  await registerAllRoutes(appInstance)
 
   return appInstance
 }
-

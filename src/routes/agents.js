@@ -1,4 +1,4 @@
-import { formatSuccessPayload, formatErrorPayload } from '../utils/response.js'
+import { createErrorResponse } from '../utils/response.js'
 import { geminiService } from '../services/gemini.js'
 
 export async function agentRoutes(app) {
@@ -66,19 +66,19 @@ export async function agentRoutes(app) {
         const { request: businessRequest } = parsedMessage
 
         if (!businessRequest || typeof businessRequest !== 'string') {
-          connection.send(JSON.stringify({
-            error: 'Business request is required and must be a string'
-          }))
+          connection.send(JSON.stringify(
+            createErrorResponse('Business request is required and must be a string', 'VALIDATION_ERROR')
+          ))
           return
         }
 
         const agentResult = await app.agentOrchestrator.processRequest(businessRequest, app)
 
-        let finalText = "Mock synthesis: Agent processing completed successfully."
+        let finalText = 'Mock synthesis: Agent processing completed successfully.'
         let individualResults = {}
 
         try {
-          agentResult.data.results.forEach(result => {
+          agentResult.data.results.forEach((result) => {
             individualResults[result.agent] = result.result
           })
 
@@ -105,10 +105,9 @@ Provide a direct, actionable answer that addresses the request.`
         })
 
       } catch (err) {
-        connection.send(JSON.stringify({
-          error: 'Failed to process request',
-          message: err.message
-        }))
+        connection.send(JSON.stringify(
+          createErrorResponse('Failed to process request', 'PROCESSING_ERROR', { details: err.message })
+        ))
       }
     })
 

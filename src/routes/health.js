@@ -1,4 +1,5 @@
-import { formatSuccessPayload } from '../utils/response.js'
+import { createSuccessResponse } from '../utils/response.js'
+import { successResponseSchema } from '../utils/schemas.js'
 
 export async function registerHealthEndpoints(app) {
   app.get('/readyz', {
@@ -6,23 +7,16 @@ export async function registerHealthEndpoints(app) {
       description: 'Readiness check endpoint',
       tags: ['health'],
       response: {
-        200: {
+        200: successResponseSchema({
           type: 'object',
           properties: {
-            success: { type: 'boolean' },
-            message: { type: 'string' },
-            data: {
-              type: 'object',
-              properties: {
-                ready: { type: 'boolean' },
-              },
-            },
+            ready: { type: 'boolean' },
           },
-        },
+        }),
       },
     },
   }, async () => {
-    return formatSuccessPayload({ ready: true })
+    return createSuccessResponse({ ready: true })
   })
 
   app.get('/healthz', {
@@ -30,22 +24,15 @@ export async function registerHealthEndpoints(app) {
       description: 'Health check endpoint',
       tags: ['health'],
       response: {
-        200: {
+        200: successResponseSchema({
           type: 'object',
           properties: {
-            success: { type: 'boolean' },
-            message: { type: 'string' },
-            data: {
-              type: 'object',
-              properties: {
-                status: { type: 'string' },
-              },
-            },
+            status: { type: 'string' },
           },
-        },
+        }),
       },
     },
   }, async () => {
-    return formatSuccessPayload({ status: 'ok' })
+    return createSuccessResponse({ status: 'ok' })
   })
 }
