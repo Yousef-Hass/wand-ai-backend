@@ -24,4 +24,11 @@ export function loadAppSettings() {
   }
 }
 
-export const config = loadAppSettings()
+let cachedConfig = null
+
+export function getConfig() {
+  if (!cachedConfig) {
+    cachedConfig = loadAppSettings()
+  }
+  return cachedConfig
+}

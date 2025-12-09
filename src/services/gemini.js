@@ -1,8 +1,10 @@
+import 'dotenv/config'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { config } from '../config/index.js'
+import { getConfig } from '../config/index.js'
 
 class GeminiService {
   constructor() {
+    const config = getConfig()
     if (!config.gemini.apiKey) {
       this.genAI = null
       this.model = null

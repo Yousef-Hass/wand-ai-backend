@@ -25,16 +25,3 @@ export function createErrorResponse(error, code = null, details = {}) {
   return response
 }
 
-export function createPaginatedResponse(data, pagination) {
-  return {
-    data,
-    meta: {
-      pagination: {
-        page: pagination.page || 1,
-        limit: pagination.limit || 10,
-        total: pagination.total || 0,
-        totalPages: Math.ceil((pagination.total || 0) / (pagination.limit || 10)),
-      },
-    },
-  }
-}

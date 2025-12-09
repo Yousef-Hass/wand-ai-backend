@@ -49,8 +49,4 @@ export function buildErrorHandler(envMode) {
   }
 }
 
-export function processError(err, req, reply) {
-  const handler = buildErrorHandler(process.env.NODE_ENV || 'development')
-  return handler(err, req, reply)
-}
 

@@ -32,16 +32,3 @@ export const errorResponseSchema = {
   required: ['error'],
 }
 
-export const commonResponseSchemas = {
-  200: (dataSchema, metaSchema) => ({
-    200: successResponseWithMetaSchema(dataSchema, metaSchema),
-  }),
-  400: {
-    400: errorResponseSchema,
-  },
-  500: {
-    500: errorResponseSchema,
-  },
-}
-
-

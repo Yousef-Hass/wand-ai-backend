@@ -1,5 +1,4 @@
 import { createSuccessResponse } from '../utils/response.js'
-import { EventEmitter } from 'events'
 import { geminiService } from '../services/gemini.js'
 
 class Agent {
@@ -54,22 +53,50 @@ const createAgent = (name, keywords) => new Agent(name, 'AI Agent', keywords, as
 })
 
 const AGENTS = {
-  data: createAgent('Data Analysis', ['data', 'analysis', 'analyze', 'sales', 'performance', 'financial']),
-  research: createAgent('Research', ['research', 'find', 'market', 'competitor', 'industry']),
-  summary: createAgent('Summary', ['summary', 'report', 'overview', 'conclusion', 'summarize']),
-  visual: createAgent('Visualization', ['chart', 'visual', 'graph', 'dashboard'])
+  data: createAgent('Data Analysis', ['data', 'analysis', 'analyze', 'sales', 'performance', 'financial', 'numbers', 'statistics', 'metrics', 'revenue', 'profit', 'budget']),
+  research: createAgent('Research', ['research', 'find', 'market', 'competitor', 'industry', 'information', 'investigate', 'study', 'explore']),
+  summary: createAgent('Summary', ['summary', 'report', 'overview', 'conclusion', 'summarize', 'brief', 'recap', 'synopsis', 'abstract']),
+  visual: createAgent('Visualization', ['chart', 'visual', 'visualize', 'graph', 'dashboard', 'plot', 'diagram', 'presentation', 'display', 'show'])
+}
+
+function selectAgents(request) {
+  const requestLower = request.toLowerCase()
+  const words = requestLower.split(/\s+/)
+  
+  const agentScores = {}
+  
+  Object.entries(AGENTS).forEach(([key, agent]) => {
+    let score = 0
+    agent.keywords.forEach(keyword => {
+      if (requestLower.includes(keyword)) {
+        score += 2
+      }
+      if (words.some(word => word.includes(keyword) || keyword.includes(word))) {
+        score += 1
+      }
+    })
+    if (score > 0) {
+      agentScores[key] = score
+    }
+  })
+  
+  const sortedAgents = Object.entries(agentScores)
+    .sort(([, a], [, b]) => b - a)
+    .map(([key]) => key)
+  
+  if (sortedAgents.length > 0) {
+    const topScore = agentScores[sortedAgents[0]]
+    return sortedAgents.filter(key => agentScores[key] >= topScore * 0.7)
+  }
+  
+  return ['research']
 }
 
 export class AgentOrchestrator {
   async processRequest(request, app) {
     const requestId = `req_${Date.now()}`
-    const keywords = request.toLowerCase()
-
-    const selectedAgents = Object.entries(AGENTS)
-      .filter(([_, agent]) => agent.keywords.some(k => keywords.includes(k)))
-      .map(([key]) => key)
-
-    const agentsToUse = selectedAgents.length > 0 ? selectedAgents : ['research']
+    
+    const agentsToUse = selectAgents(request)
 
     app.eventDispatcher.emit('planning.complete', {
       requestId,
